@@ -12,6 +12,14 @@
     z-index: 9999;
 }
 
+.wp-contact-bar--left {
+    justify-content: flex-start;
+}
+
+.wp-contact-bar--right {
+    justify-content: flex-end;
+}
+
 .wp-contact-bar__toggle {
     display: inline-flex;
     align-items: center;

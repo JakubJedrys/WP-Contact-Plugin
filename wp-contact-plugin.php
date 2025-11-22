@@ -89,6 +89,14 @@ class WP_Contact_Plugin {
             'wp-contact-plugin',
             'wp_contact_plugin_section'
         );
+
+        add_settings_field(
+            'position',
+            __( 'Położenie belki', 'wp-contact-plugin' ),
+            [ $this, 'render_position_field' ],
+            'wp-contact-plugin',
+            'wp_contact_plugin_section'
+        );
     }
 
     public function sanitize_options( $input ) {
@@ -106,6 +114,9 @@ class WP_Contact_Plugin {
 
         $visibility_options = [ 'everywhere', 'mobile', 'desktop' ];
         $options['visibility'] = in_array( $input['visibility'] ?? 'everywhere', $visibility_options, true ) ? $input['visibility'] : 'everywhere';
+
+        $position_options = [ 'right', 'left' ];
+        $options['position']  = in_array( $input['position'] ?? 'right', $position_options, true ) ? $input['position'] : 'right';
 
         return $options;
     }
@@ -136,6 +147,7 @@ class WP_Contact_Plugin {
             'email_address'   => '',
             'bar_color'       => '#1e73be',
             'visibility'      => 'everywhere',
+            'position'        => 'right',
         ];
 
         $options = get_option( self::OPTION_KEY, [] );
@@ -192,6 +204,18 @@ class WP_Contact_Plugin {
         <?php
     }
 
+    public function render_position_field() {
+        $options  = $this->get_options();
+        $position = $options['position'];
+        ?>
+        <select name="<?php echo esc_attr( self::OPTION_KEY ); ?>[position]">
+            <option value="right" <?php selected( $position, 'right' ); ?>><?php esc_html_e( 'Prawa strona', 'wp-contact-plugin' ); ?></option>
+            <option value="left" <?php selected( $position, 'left' ); ?>><?php esc_html_e( 'Lewa strona', 'wp-contact-plugin' ); ?></option>
+        </select>
+        <p class="description"><?php esc_html_e( 'Wybierz, po której stronie ekranu wyświetlać belkę i przycisk menu.', 'wp-contact-plugin' ); ?></p>
+        <?php
+    }
+
     public function enqueue_assets() {
         $options = $this->get_options();
 
@@ -218,9 +242,11 @@ class WP_Contact_Plugin {
             $visibility_class = 'wp-contact-bar--desktop';
         }
 
+        $position_class = 'right' === $options['position'] ? 'wp-contact-bar--right' : 'wp-contact-bar--left';
+
         $color = esc_attr( $options['bar_color'] );
         ?>
-        <div class="wp-contact-bar <?php echo esc_attr( $visibility_class ); ?>" style="--wp-contact-bar-color: <?php echo $color; ?>;">
+        <div class="wp-contact-bar <?php echo esc_attr( $visibility_class ); ?> <?php echo esc_attr( $position_class ); ?>" style="--wp-contact-bar-color: <?php echo $color; ?>;">
             <button class="wp-contact-bar__toggle" aria-expanded="false" aria-controls="wp-contact-bar-panel">
                 <span class="wp-contact-bar__icon" aria-hidden="true">☰</span>
                 <span class="screen-reader-text"><?php esc_html_e( 'Pokaż opcje kontaktu', 'wp-contact-plugin' ); ?></span>
