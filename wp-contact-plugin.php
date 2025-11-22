@@ -16,8 +16,12 @@ class WP_Contact_Plugin {
     const OPTION_KEY = 'wp_contact_plugin_options';
     const VERSION    = '1.2.0';
 
+    private $icon_base_url;
+
     public function __construct() {
         add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
+
+        $this->icon_base_url = plugin_dir_url( __FILE__ ) . 'assets/icons/';
 
         add_action( 'admin_menu', [ $this, 'register_settings_page' ] );
         add_action( 'admin_init', [ $this, 'register_settings' ] );
@@ -153,11 +157,19 @@ class WP_Contact_Plugin {
         $layout_options     = [ 'bar', 'floating' ];
         $options['layout']  = in_array( $input['layout'] ?? 'bar', $layout_options, true ) ? $input['layout'] : 'bar';
 
-        $position_options = [ 'right', 'left' ];
-        $options['position']  = in_array( $input['position'] ?? 'right', $position_options, true ) ? $input['position'] : 'right';
+        $allowed_corners = [ 'bottom_right', 'bottom_left', 'top_right', 'top_left' ];
+        $existing_corner = $options['corner'] ?? '';
 
-        $vertical_options      = [ 'bottom', 'top' ];
-        $options['vertical']   = in_array( $input['vertical'] ?? 'bottom', $vertical_options, true ) ? $input['vertical'] : 'bottom';
+        if ( empty( $existing_corner ) && isset( $options['position'], $options['vertical'] ) ) {
+            $existing_corner = $options['vertical'] . '_' . $options['position'];
+        }
+
+        $corner_input = $input['corner'] ?? $existing_corner;
+        $corner       = in_array( $corner_input, $allowed_corners, true ) ? $corner_input : 'bottom_right';
+        $options['corner'] = $corner;
+
+        $options['position'] = false !== strpos( $corner, 'left' ) ? 'left' : 'right';
+        $options['vertical'] = false !== strpos( $corner, 'top' ) ? 'top' : 'bottom';
 
         $options['offset_x']     = isset( $input['offset_x'] ) ? intval( $input['offset_x'] ) : 0;
         $options['offset_y']     = isset( $input['offset_y'] ) ? intval( $input['offset_y'] ) : 0;
@@ -215,6 +227,7 @@ class WP_Contact_Plugin {
             'visibility'      => 'everywhere',
             'position'        => 'right',
             'vertical'        => 'bottom',
+            'corner'          => 'bottom_right',
             'offset_x'        => 16,
             'offset_y'        => 16,
             'cookie_offset'   => 0,
@@ -306,7 +319,7 @@ class WP_Contact_Plugin {
         $icon_data = $options[ 'icon_' . $channel ] ?? '';
 
         if ( 'official' === $mode ) {
-            return $this->get_official_icon_svg( $channel );
+            return $this->get_official_icon_markup( $channel );
         }
 
         if ( 'svg' === $mode && ! empty( $icon_data ) ) {
@@ -322,16 +335,20 @@ class WP_Contact_Plugin {
         return esc_html( $this->get_default_icon( $channel ) );
     }
 
-    private function get_official_icon_svg( $channel ) {
-        switch ( $channel ) {
-            case 'whatsapp':
-                return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-hidden="true"><path fill="#25D366" d="M16 2.7c-7.3 0-13.3 5.9-13.3 13.3 0 2.3.6 4.5 1.7 6.4L3 30l8-1.7c1.8.9 3.8 1.3 5.9 1.3 7.3 0 13.3-5.9 13.3-13.3S23.3 2.7 16 2.7Z"/><path fill="#fff" d="M23.2 19.1c-.1-.2-.5-.3-1-.5-.5-.1-2.8-1.4-3.2-1.6-.4-.1-.7-.2-1 .2-.3.4-1.2 1.6-1.4 1.9-.3.3-.5.3-1 0s-1.9-.7-3.6-2.2c-1.3-1.1-2.2-2.5-2.4-3-.3-.5 0-.7.2-.9.2-.2.5-.5.7-.7.2-.2.3-.3.5-.5.2-.2.3-.4.2-.6-.1-.2-.9-2.1-1.2-2.8-.3-.7-.6-.6-.9-.6-.2 0-.5-.1-.8-.1s-.7.1-1 .5c-.3.4-1.3 1.2-1.3 3s1.3 3.4 1.5 3.6c.2.2 2.6 3.9 6.3 5.5 3.8 1.6 3.8 1.1 4.5 1 .7-.1 2.3-.9 2.6-1.7.3-.8.3-1.5.2-1.7Z"/></svg>';
-            case 'phone':
-                return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden="true"><path fill="#0B67C2" d="M6.6 2.1c.4-.2.8 0 1 .4l1.7 4c.2.4 0 .8-.3 1.1l-1.3 1.2c.3.8 1 2 2.2 3.2 1.3 1.3 2.5 2 3.3 2.3l1.3-1.3c.3-.3.8-.5 1.2-.3l3.9 1.8c.4.2.6.6.4 1l-1.3 3.3c-.2.4-.6.7-1.1.7-4.4-.1-8.1-1.8-11-4.8-2.9-2.9-4.6-6.7-4.7-11-.1-.4.2-.9.6-1.1l3.1-1.5Z"/></svg>';
-            case 'email':
-            default:
-                return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden="true"><path fill="#D64550" d="M3 5.5C3 4.7 3.7 4 4.5 4h15c.8 0 1.5.7 1.5 1.5v13c0 .8-.7 1.5-1.5 1.5h-15C3.7 20 3 19.3 3 18.5v-13Z"/><path fill="#fff" d="M19 7.5V7l-7 4.6L5 7v.5l7 4.5 7-4.5Z"/></svg>';
+    private function get_official_icon_markup( $channel ) {
+        $icons = [
+            'whatsapp' => 'whatsapp.svg',
+            'phone'    => 'phone.svg',
+            'email'    => 'email.svg',
+        ];
+
+        if ( ! isset( $icons[ $channel ] ) ) {
+            return '';
         }
+
+        $src = esc_url( $this->icon_base_url . $icons[ $channel ] );
+
+        return '<img src="' . $src . '" class="wp-contact-bar__icon-image" alt="" aria-hidden="true" loading="lazy" decoding="async" />';
     }
 
     private function get_default_icon( $channel ) {
@@ -421,26 +438,21 @@ class WP_Contact_Plugin {
 
     public function render_position_field() {
         $options  = $this->get_options();
-        $position = $options['position'];
+        $corner = $options['corner'] ?? 'bottom_right';
         ?>
-        <select name="<?php echo esc_attr( self::OPTION_KEY ); ?>[position]">
-            <option value="right" <?php selected( $position, 'right' ); ?>><?php esc_html_e( 'Prawa strona', 'wp-contact-plugin' ); ?></option>
-            <option value="left" <?php selected( $position, 'left' ); ?>><?php esc_html_e( 'Lewa strona', 'wp-contact-plugin' ); ?></option>
+        <select name="<?php echo esc_attr( self::OPTION_KEY ); ?>[corner]">
+            <option value="bottom_right" <?php selected( $corner, 'bottom_right' ); ?>><?php esc_html_e( 'Dolny prawy róg', 'wp-contact-plugin' ); ?></option>
+            <option value="bottom_left" <?php selected( $corner, 'bottom_left' ); ?>><?php esc_html_e( 'Dolny lewy róg', 'wp-contact-plugin' ); ?></option>
+            <option value="top_right" <?php selected( $corner, 'top_right' ); ?>><?php esc_html_e( 'Górny prawy róg', 'wp-contact-plugin' ); ?></option>
+            <option value="top_left" <?php selected( $corner, 'top_left' ); ?>><?php esc_html_e( 'Górny lewy róg', 'wp-contact-plugin' ); ?></option>
         </select>
-        <p class="description"><?php esc_html_e( 'Wybierz, po której stronie ekranu wyświetlać belkę / koło.', 'wp-contact-plugin' ); ?></p>
+        <p class="description"><?php esc_html_e( 'Wybierz róg ekranu, w którym ma pojawić się belka / koło.', 'wp-contact-plugin' ); ?></p>
         <?php
     }
 
     public function render_offsets_field() {
         $options = $this->get_options();
         ?>
-        <label style="display:block;margin-bottom:6px;">
-            <?php esc_html_e( 'Wyrównanie pionowe', 'wp-contact-plugin' ); ?>
-            <select name="<?php echo esc_attr( self::OPTION_KEY ); ?>[vertical]">
-                <option value="bottom" <?php selected( $options['vertical'], 'bottom' ); ?>><?php esc_html_e( 'Dół', 'wp-contact-plugin' ); ?></option>
-                <option value="top" <?php selected( $options['vertical'], 'top' ); ?>><?php esc_html_e( 'Góra', 'wp-contact-plugin' ); ?></option>
-            </select>
-        </label>
         <label style="display:block;margin-bottom:6px;">
             <?php esc_html_e( 'Odstęp X (px)', 'wp-contact-plugin' ); ?>
             <input type="number" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[offset_x]" value="<?php echo esc_attr( $options['offset_x'] ); ?>" />
@@ -516,6 +528,7 @@ class WP_Contact_Plugin {
                 'layout'      => $options['layout'],
                 'position'    => $options['position'],
                 'vertical'    => $options['vertical'],
+                'corner'      => $options['corner'] ?? 'bottom_right',
                 'offsetX'     => (int) $options['offset_x'],
                 'offsetY'     => (int) $options['offset_y'],
                 'cookieOffset'=> (int) $options['cookie_offset'],
