@@ -1,0 +1,246 @@
+.wp-contact-bar {
+    position: fixed;
+    inset-inline: auto;
+    inset-block: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 9999;
+    --wp-contact-radius: 999px;
+    --wp-contact-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+}
+
+.wp-contact-bar--inline {
+    bottom: 0;
+    inset-inline: 0;
+    width: 100%;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    padding: calc(0.5rem + env(safe-area-inset-bottom)) 1rem 0.75rem;
+    background: var(--wp-contact-bar-color, #1e73be);
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.wp-contact-bar--inline.wp-contact-bar--left {
+    align-items: flex-start;
+}
+
+.wp-contact-bar--inline.wp-contact-bar--right {
+    align-items: flex-end;
+}
+
+.wp-contact-bar--floating {
+    inset-inline-start: auto;
+    inset-inline-end: auto;
+    inline-size: max-content;
+    flex-direction: column;
+    gap: 0.75rem;
+    transform: translateZ(0);
+}
+
+.wp-contact-bar--floating.wp-contact-bar--right {
+    right: max(var(--wp-contact-offset-x, 0px), env(safe-area-inset-right));
+}
+
+.wp-contact-bar--floating.wp-contact-bar--left {
+    left: max(var(--wp-contact-offset-x, 0px), env(safe-area-inset-left));
+}
+
+.wp-contact-bar--floating.wp-contact-bar--bottom {
+    bottom: calc(max(var(--wp-contact-offset-y, 0px), env(safe-area-inset-bottom)));
+}
+
+.wp-contact-bar--floating.wp-contact-bar--top {
+    top: calc(max(var(--wp-contact-offset-y, 0px), env(safe-area-inset-top)));
+}
+
+.wp-contact-bar__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--wp-contact-size, 54px);
+    height: var(--wp-contact-size, 54px);
+    min-width: var(--wp-contact-size, 54px);
+    border: none;
+    border-radius: var(--wp-contact-radius);
+    background: #fff;
+    color: var(--wp-contact-bar-color, #1e73be);
+    font-size: calc(var(--wp-contact-size, 54px) / 2.5);
+    cursor: pointer;
+    box-shadow: var(--wp-contact-shadow);
+    position: relative;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.wp-contact-bar--pulse .wp-contact-bar__toggle::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0.2;
+    animation: wp-contact-pulse 1.8s ease-in-out infinite;
+    transform: scale(1);
+    z-index: -1;
+}
+
+.wp-contact-bar__toggle:hover,
+.wp-contact-bar__toggle:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+}
+
+.wp-contact-bar__panel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    background: #fff;
+    border-radius: var(--wp-contact-radius);
+    padding: 0.35rem 0.5rem;
+    box-shadow: var(--wp-contact-shadow);
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.3s ease;
+    will-change: transform, opacity;
+}
+
+.wp-contact-bar--floating .wp-contact-bar__panel {
+    flex-direction: column;
+    padding: 0.5rem;
+    margin: 0;
+    align-items: stretch;
+}
+
+.wp-contact-bar--inline .wp-contact-bar__panel {
+    align-self: flex-end;
+}
+
+.wp-contact-bar--inline.wp-contact-bar--left .wp-contact-bar__panel {
+    align-self: flex-start;
+}
+
+.wp-contact-bar--floating.wp-contact-bar--left .wp-contact-bar__panel {
+    align-items: flex-start;
+}
+
+.wp-contact-bar--floating.wp-contact-bar--right .wp-contact-bar__panel {
+    align-items: flex-end;
+}
+
+.wp-contact-bar.is-open .wp-contact-bar__panel {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.wp-contact-bar--top .wp-contact-bar__panel {
+    transform: translateY(-12px);
+}
+
+.wp-contact-bar--top.is-open .wp-contact-bar__panel {
+    transform: translateY(0);
+}
+
+.wp-contact-bar__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--wp-contact-size, 54px) - 8px);
+    height: calc(var(--wp-contact-size, 54px) - 8px);
+    border-radius: 50%;
+    color: #fff;
+    background: var(--wp-contact-bar-color, #1e73be);
+    text-decoration: none;
+    font-size: calc(var(--wp-contact-size, 54px) / 2.4);
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--wp-contact-shadow);
+}
+
+.wp-contact-bar__link--whatsapp { background: var(--wp-contact-whatsapp-color, var(--wp-contact-bar-color, #1e73be)); }
+.wp-contact-bar__link--phone { background: var(--wp-contact-phone-color, var(--wp-contact-bar-color, #1e73be)); }
+.wp-contact-bar__link--email { background: var(--wp-contact-email-color, var(--wp-contact-bar-color, #1e73be)); }
+
+.wp-contact-bar__link:hover,
+.wp-contact-bar__link:focus {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wp-contact-bar__panel,
+    .wp-contact-bar__link,
+    .wp-contact-bar__toggle {
+        transition: none;
+        animation: none;
+    }
+}
+
+.wp-contact-bar__link:focus-visible,
+.wp-contact-bar__toggle:focus-visible {
+    outline: 2px solid var(--wp-contact-bar-color, #1e73be);
+    outline-offset: 2px;
+}
+
+.wp-contact-bar__icon {
+    line-height: 1;
+    display: inline-block;
+}
+
+.wp-contact-bar__icon--open {
+    display: none;
+}
+
+.wp-contact-bar.is-open .wp-contact-bar__icon--closed {
+    display: none;
+}
+
+.wp-contact-bar.is-open .wp-contact-bar__icon--open {
+    display: inline-block;
+}
+
+.wp-contact-bar__icon-slot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.screen-reader-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.wp-contact-bar--mobile {
+    display: flex;
+}
+
+.wp-contact-bar--desktop {
+    display: flex;
+}
+
+@media (min-width: 768px) {
+    .wp-contact-bar--mobile {
+        display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .wp-contact-bar--desktop {
+        display: none;
+    }
+}
+
+@keyframes wp-contact-pulse {
+    0% { transform: scale(1); opacity: 0.35; }
+    70% { transform: scale(1.6); opacity: 0; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
