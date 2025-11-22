@@ -1,92 +1,38 @@
 .wp-contact-bar {
     position: fixed;
-    inset-inline: auto;
-    inset-block: auto;
+    bottom: 0;
+    width: 100%;
     display: flex;
+    justify-content: flex-end;
     align-items: center;
     gap: 0.5rem;
-    z-index: 9999;
-    --wp-contact-radius: 999px;
-    --wp-contact-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
-}
-
-.wp-contact-bar--inline {
-    bottom: 0;
-    inset-inline: 0;
-    width: 100%;
-    justify-content: flex-end;
     padding: calc(0.5rem + env(safe-area-inset-bottom)) 1rem 0.5rem;
     background: var(--wp-contact-bar-color, #1e73be);
     box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
 }
 
-.wp-contact-bar--inline.wp-contact-bar--left {
+.wp-contact-bar--left {
     justify-content: flex-start;
 }
 
-.wp-contact-bar--inline.wp-contact-bar--right {
+.wp-contact-bar--right {
     justify-content: flex-end;
-}
-
-.wp-contact-bar--floating {
-    inset-inline-start: auto;
-    inset-inline-end: auto;
-    inline-size: max-content;
-    flex-direction: column;
-    gap: 0.75rem;
-    transform: translateZ(0);
-}
-
-.wp-contact-bar--floating.wp-contact-bar--right {
-    right: max(var(--wp-contact-offset-x, 0px), env(safe-area-inset-right));
-}
-
-.wp-contact-bar--floating.wp-contact-bar--left {
-    left: max(var(--wp-contact-offset-x, 0px), env(safe-area-inset-left));
-}
-
-.wp-contact-bar--floating.wp-contact-bar--bottom {
-    bottom: calc(max(var(--wp-contact-offset-y, 0px), env(safe-area-inset-bottom)));
-}
-
-.wp-contact-bar--floating.wp-contact-bar--top {
-    top: calc(max(var(--wp-contact-offset-y, 0px), env(safe-area-inset-top)));
 }
 
 .wp-contact-bar__toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--wp-contact-size, 54px);
-    height: var(--wp-contact-size, 54px);
-    min-width: var(--wp-contact-size, 54px);
+    width: 44px;
+    height: 44px;
     border: none;
-    border-radius: var(--wp-contact-radius);
+    border-radius: 999px;
     background: #fff;
     color: var(--wp-contact-bar-color, #1e73be);
-    font-size: calc(var(--wp-contact-size, 54px) / 2.5);
+    font-size: 22px;
     cursor: pointer;
-    box-shadow: var(--wp-contact-shadow);
-    position: relative;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.wp-contact-bar--pulse .wp-contact-bar__toggle::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: currentColor;
-    opacity: 0.2;
-    animation: wp-contact-pulse 1.8s ease-in-out infinite;
-    transform: scale(1);
-    z-index: -1;
-}
-
-.wp-contact-bar__toggle:hover,
-.wp-contact-bar__toggle:focus-visible {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .wp-contact-bar__panel {
@@ -95,29 +41,13 @@
     gap: 0.5rem;
     margin-right: 0.75rem;
     background: #fff;
-    border-radius: var(--wp-contact-radius);
+    border-radius: 999px;
     padding: 0.35rem 0.5rem;
-    box-shadow: var(--wp-contact-shadow);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     opacity: 0;
     transform: translateY(8px);
     pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.3s ease;
-    will-change: transform, opacity;
-}
-
-.wp-contact-bar--floating .wp-contact-bar__panel {
-    flex-direction: column;
-    padding: 0.5rem;
-    margin: 0;
-    align-items: stretch;
-}
-
-.wp-contact-bar--floating.wp-contact-bar--left .wp-contact-bar__panel {
-    align-items: flex-start;
-}
-
-.wp-contact-bar--floating.wp-contact-bar--right .wp-contact-bar__panel {
-    align-items: flex-end;
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .wp-contact-bar.is-open .wp-contact-bar__panel {
@@ -126,41 +56,30 @@
     pointer-events: auto;
 }
 
-.wp-contact-bar--top.is-open .wp-contact-bar__panel {
-    transform: translateY(-8px);
-}
-
 .wp-contact-bar__link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: calc(var(--wp-contact-size, 54px) - 8px);
-    height: calc(var(--wp-contact-size, 54px) - 8px);
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     color: #fff;
     background: var(--wp-contact-bar-color, #1e73be);
     text-decoration: none;
-    font-size: calc(var(--wp-contact-size, 54px) / 2.4);
-    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: var(--wp-contact-shadow);
+    font-size: 20px;
+    transition: background 0.2s ease, transform 0.2s ease;
 }
-
-.wp-contact-bar__link--whatsapp { background: var(--wp-contact-whatsapp-color, var(--wp-contact-bar-color, #1e73be)); }
-.wp-contact-bar__link--phone { background: var(--wp-contact-phone-color, var(--wp-contact-bar-color, #1e73be)); }
-.wp-contact-bar__link--email { background: var(--wp-contact-email-color, var(--wp-contact-bar-color, #1e73be)); }
 
 .wp-contact-bar__link:hover,
 .wp-contact-bar__link:focus {
-    transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+    background: color-mix(in srgb, var(--wp-contact-bar-color, #1e73be) 85%, #ffffff 15%);
+    transform: translateY(-1px);
 }
 
 @media (prefers-reduced-motion: reduce) {
     .wp-contact-bar__panel,
-    .wp-contact-bar__link,
-    .wp-contact-bar__toggle {
+    .wp-contact-bar__link {
         transition: none;
-        animation: none;
     }
 }
 
@@ -171,26 +90,6 @@
 }
 
 .wp-contact-bar__icon {
-    line-height: 1;
-    display: inline-block;
-}
-
-.wp-contact-bar__icon--open {
-    display: none;
-}
-
-.wp-contact-bar.is-open .wp-contact-bar__icon--closed {
-    display: none;
-}
-
-.wp-contact-bar.is-open .wp-contact-bar__icon--open {
-    display: inline-block;
-}
-
-.wp-contact-bar__icon-slot {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     line-height: 1;
 }
 
@@ -224,10 +123,4 @@
     .wp-contact-bar--desktop {
         display: none;
     }
-}
-
-@keyframes wp-contact-pulse {
-    0% { transform: scale(1); opacity: 0.35; }
-    70% { transform: scale(1.6); opacity: 0; }
-    100% { transform: scale(1.6); opacity: 0; }
 }

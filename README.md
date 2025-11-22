@@ -1,13 +1,13 @@
 # WP Contact Plugin
 
-Lekka wtyczka WordPress dodająca dolną belkę lub pływające koło kontaktu z szybkim dostępem do WhatsApp, telefonu i e-maila. Wtyczka pojawia się wyłącznie na froncie strony i może być ograniczona do wybranych urządzeń.
+Lekka wtyczka WordPress dodająca dolną belkę kontaktową z szybkim dostępem do WhatsApp, telefonu i e-maila. Belka pojawia się wyłącznie na froncie strony i może być ograniczona do wybranych urządzeń.
 
 ## Funkcje
-- Stała belka na dole ekranu **lub** kompaktowe pływające koło doklejane do narożnika (również 0,0) z możliwością drag & drop.
-- Własne SVG / klasy z biblioteki ikon, ikony zamknięte/otwarte, pulsowanie oraz animacja slide+fade panelu.
-- Kolory globalne i per przycisk, kontrola rozmiaru (S/M/L), wyrównanie panelu do krawędzi, offsety X/Y + dodatkowy offset pod belkę cookies oraz iOS safe-area.
-- Łatwe ustawienia w panelu: numery telefon/WhatsApp, adres e-mail, widoczność (wszędzie / mobile / desktop), pozycja lewa/prawa, pion góra/dół.
-- Obsługa ARIA, trybu prefer-reduced-motion, bezpiecznego paddingu dla wycięć ekranu i zapisywania pozycji koła w localStorage.
+- Stała belka na dole ekranu z przełącznikiem menu i ikonami akcji.
+- Łatwe ustawienia w panelu: numer telefonu (tel:), numer WhatsApp (wa.me), adres e-mail (mailto:), kolor belki/ikon.
+- Opcje widoczności: wszędzie, tylko mobile, tylko desktop.
+- Wybór położenia belki: prawa lub lewa strona ekranu.
+- Obsługa ARIA, trybu prefer-reduced-motion i bezpiecznego paddingu dla wycięć ekranu.
 
 ## Instalacja
 1. Skopiuj folder wtyczki do katalogu `wp-content/plugins/`.
@@ -15,10 +15,9 @@ Lekka wtyczka WordPress dodająca dolną belkę lub pływające koło kontaktu z
 3. Przejdź do „Ustawienia → Kontakt – belka”, uzupełnij dane kontaktowe i zapisz.
 
 ## Dostosowanie
-- **Układ**: wybierz „Dolna belka” lub „Pływające koło”.
-- **Położenie**: lewa/prawa krawędź oraz góra/dół z ręcznymi offsetami X/Y i dodatkowym marginesem pod belkę cookies.
-- **Kolory**: ustaw globalny kolor oraz indywidualne kolory przycisków WhatsApp/Telefon/E-mail.
-- **Ikony i animacje**: podmień SVG lub klasy ikon, ustaw inne ikony otwarte/zamknięte, włącz pulsowanie i wybierz rozmiar przycisków.
+- **Kolor**: ustaw w polu „Kolor belki i ikon”.
+- **Widoczność**: wybierz tryb „Wszędzie”, „Tylko mobile” lub „Tylko desktop”.
+- **Położenie**: wybierz „Prawa strona” lub „Lewa strona”, aby ustawić, gdzie pojawi się przycisk menu.
 
 ## Wymagania
 - WordPress 5.8+
