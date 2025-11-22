@@ -33,7 +33,7 @@
     inset-inline-start: auto;
     inset-inline-end: auto;
     inline-size: max-content;
-    flex-direction: column;
+    flex-direction: column-reverse;
     gap: 0.75rem;
     transform: translateZ(0);
 }
@@ -205,6 +205,12 @@
     align-items: center;
     justify-content: center;
     line-height: 1;
+}
+
+.wp-contact-bar__icon-image {
+    display: block;
+    width: 1.4em;
+    height: 1.4em;
 }
 
 .screen-reader-text {
