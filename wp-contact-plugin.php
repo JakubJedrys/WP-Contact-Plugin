@@ -1,9 +1,11 @@
 <?php
 /**
- * Plugin Name: WP Contact Plugin
+ * Plugin Name: Kontakt Dock
  * Description: Dodaje dolną belkę lub pływające koło kontaktowe z szybkim dostępem do WhatsApp, telefonu i e-maila.
- * Version: 1.1.0
- * Author: OpenAI
+ * Version: 1.2.0
+ * Author: Jakub Jędrys
+ * Requires PHP: 7.4
+ * Requires at least: 5.8
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WP_Contact_Plugin {
     const OPTION_KEY = 'wp_contact_plugin_options';
-    const VERSION    = '1.1.0';
+    const VERSION    = '1.2.0';
 
     public function __construct() {
         add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
@@ -31,12 +33,14 @@ class WP_Contact_Plugin {
     }
 
     public function register_settings_page() {
-        add_options_page(
-            __( 'Kontakt – belka', 'wp-contact-plugin' ),
-            __( 'Kontakt – belka', 'wp-contact-plugin' ),
+        add_menu_page(
+            __( 'Kontakt Dock', 'wp-contact-plugin' ),
+            __( 'Kontakt Dock', 'wp-contact-plugin' ),
             'manage_options',
             'wp-contact-plugin',
-            [ $this, 'render_settings_page' ]
+            [ $this, 'render_settings_page' ],
+            'dashicons-phone',
+            56
         );
     }
 
@@ -169,6 +173,11 @@ class WP_Contact_Plugin {
         $options['icon_phone']    = $this->sanitize_icon_markup( $input['icon_phone'] ?? '' );
         $options['icon_email']    = $this->sanitize_icon_markup( $input['icon_email'] ?? '' );
 
+        $icon_modes          = [ 'default', 'custom', 'svg', 'official' ];
+        $options['icon_mode_whatsapp'] = in_array( $input['icon_mode_whatsapp'] ?? 'default', $icon_modes, true ) ? $input['icon_mode_whatsapp'] : 'default';
+        $options['icon_mode_phone']    = in_array( $input['icon_mode_phone'] ?? 'default', $icon_modes, true ) ? $input['icon_mode_phone'] : 'default';
+        $options['icon_mode_email']    = in_array( $input['icon_mode_email'] ?? 'default', $icon_modes, true ) ? $input['icon_mode_email'] : 'default';
+
         $options['pulse'] = ! empty( $input['pulse'] ) ? 'yes' : 'no';
 
         return $options;
@@ -181,7 +190,7 @@ class WP_Contact_Plugin {
 
         ?>
         <div class="wrap">
-            <h1><?php esc_html_e( 'Belka kontaktowa', 'wp-contact-plugin' ); ?></h1>
+            <h1><?php esc_html_e( 'Kontakt Dock', 'wp-contact-plugin' ); ?></h1>
             <form method="post" action="options.php">
                 <?php
                 settings_fields( self::OPTION_KEY );
@@ -215,6 +224,9 @@ class WP_Contact_Plugin {
             'icon_whatsapp'      => '',
             'icon_phone'         => '',
             'icon_email'         => '',
+            'icon_mode_whatsapp' => 'default',
+            'icon_mode_phone'    => 'default',
+            'icon_mode_email'    => 'default',
             'pulse'              => 'no',
         ];
 
@@ -258,10 +270,80 @@ class WP_Contact_Plugin {
         return wp_kses( $icon, $allowed_tags );
     }
 
+    private function render_icon_picker( $channel, $label, $options, $icon_modes ) {
+        $mode_key   = 'icon_mode_' . $channel;
+        $icon_key   = 'icon_' . $channel;
+        $mode_value = $options[ $mode_key ] ?? 'default';
+        ?>
+        <fieldset style="margin-bottom:12px; border:1px solid #ccd0d4; padding:10px;">
+            <legend style="padding:0 6px; font-weight:600;">
+                <?php echo esc_html( sprintf( __( 'Ikona: %s', 'wp-contact-plugin' ), $label ) ); ?>
+            </legend>
+            <label style="display:block; margin-bottom:6px;">
+                <?php esc_html_e( 'Źródło ikony', 'wp-contact-plugin' ); ?>
+                <select name="<?php echo esc_attr( self::OPTION_KEY ); ?>[<?php echo esc_attr( $mode_key ); ?>]">
+                    <?php foreach ( $icon_modes as $mode_value_key => $mode_label ) : ?>
+                        <option value="<?php echo esc_attr( $mode_value_key ); ?>" <?php selected( $mode_value, $mode_value_key ); ?>><?php echo esc_html( $mode_label ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+            <label style="display:block; margin-bottom:6px;">
+                <?php esc_html_e( 'Klasa / SVG (dla trybu Własny SVG lub Biblioteka ikon)', 'wp-contact-plugin' ); ?>
+                <textarea name="<?php echo esc_attr( self::OPTION_KEY ); ?>[<?php echo esc_attr( $icon_key ); ?>]" rows="2" class="large-text code"><?php echo esc_textarea( $options[ $icon_key ] ); ?></textarea>
+            </label>
+        </fieldset>
+        <?php
+    }
+
     private function sanitize_contact_number( $number ) {
         $cleaned = preg_replace( '/[^0-9+]/', '', $number );
 
         return ltrim( $cleaned );
+    }
+
+    private function get_icon_markup( $channel, $options ) {
+        $mode      = $options[ 'icon_mode_' . $channel ] ?? 'default';
+        $icon_data = $options[ 'icon_' . $channel ] ?? '';
+
+        if ( 'official' === $mode ) {
+            return $this->get_official_icon_svg( $channel );
+        }
+
+        if ( 'svg' === $mode && ! empty( $icon_data ) ) {
+            return wp_kses_post( $icon_data );
+        }
+
+        if ( 'custom' === $mode && ! empty( $icon_data ) ) {
+            $class = sanitize_html_class( wp_strip_all_tags( $icon_data ) );
+
+            return $class ? '<span class="' . esc_attr( $class ) . '" aria-hidden="true"></span>' : esc_html( $this->get_default_icon( $channel ) );
+        }
+
+        return esc_html( $this->get_default_icon( $channel ) );
+    }
+
+    private function get_official_icon_svg( $channel ) {
+        switch ( $channel ) {
+            case 'whatsapp':
+                return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-hidden="true"><path fill="#25D366" d="M16 2.7c-7.3 0-13.3 5.9-13.3 13.3 0 2.3.6 4.5 1.7 6.4L3 30l8-1.7c1.8.9 3.8 1.3 5.9 1.3 7.3 0 13.3-5.9 13.3-13.3S23.3 2.7 16 2.7Z"/><path fill="#fff" d="M23.2 19.1c-.1-.2-.5-.3-1-.5-.5-.1-2.8-1.4-3.2-1.6-.4-.1-.7-.2-1 .2-.3.4-1.2 1.6-1.4 1.9-.3.3-.5.3-1 0s-1.9-.7-3.6-2.2c-1.3-1.1-2.2-2.5-2.4-3-.3-.5 0-.7.2-.9.2-.2.5-.5.7-.7.2-.2.3-.3.5-.5.2-.2.3-.4.2-.6-.1-.2-.9-2.1-1.2-2.8-.3-.7-.6-.6-.9-.6-.2 0-.5-.1-.8-.1s-.7.1-1 .5c-.3.4-1.3 1.2-1.3 3s1.3 3.4 1.5 3.6c.2.2 2.6 3.9 6.3 5.5 3.8 1.6 3.8 1.1 4.5 1 .7-.1 2.3-.9 2.6-1.7.3-.8.3-1.5.2-1.7Z"/></svg>';
+            case 'phone':
+                return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden="true"><path fill="#0B67C2" d="M6.6 2.1c.4-.2.8 0 1 .4l1.7 4c.2.4 0 .8-.3 1.1l-1.3 1.2c.3.8 1 2 2.2 3.2 1.3 1.3 2.5 2 3.3 2.3l1.3-1.3c.3-.3.8-.5 1.2-.3l3.9 1.8c.4.2.6.6.4 1l-1.3 3.3c-.2.4-.6.7-1.1.7-4.4-.1-8.1-1.8-11-4.8-2.9-2.9-4.6-6.7-4.7-11-.1-.4.2-.9.6-1.1l3.1-1.5Z"/></svg>';
+            case 'email':
+            default:
+                return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden="true"><path fill="#D64550" d="M3 5.5C3 4.7 3.7 4 4.5 4h15c.8 0 1.5.7 1.5 1.5v13c0 .8-.7 1.5-1.5 1.5h-15C3.7 20 3 19.3 3 18.5v-13Z"/><path fill="#fff" d="M19 7.5V7l-7 4.6L5 7v.5l7 4.5 7-4.5Z"/></svg>';
+        }
+    }
+
+    private function get_default_icon( $channel ) {
+        switch ( $channel ) {
+            case 'whatsapp':
+                return '💬';
+            case 'phone':
+                return '📞';
+            case 'email':
+            default:
+                return '✉️';
+        }
     }
 
     public function render_phone_field() {
@@ -378,6 +460,12 @@ class WP_Contact_Plugin {
     public function render_icons_field() {
         $options = $this->get_options();
         ?>
+        <?php $icon_modes = [
+            'default'  => __( 'Domyślna', 'wp-contact-plugin' ),
+            'official' => __( 'Oficjalna ikona marki', 'wp-contact-plugin' ),
+            'svg'      => __( 'Własny SVG', 'wp-contact-plugin' ),
+            'custom'   => __( 'Biblioteka ikon / klasa', 'wp-contact-plugin' ),
+        ]; ?>
         <label style="display:block;margin-bottom:6px;">
             <?php esc_html_e( 'Ikona zamknięta (menu)', 'wp-contact-plugin' ); ?>
             <input type="text" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[toggle_icon_closed]" value="<?php echo esc_attr( $options['toggle_icon_closed'] ); ?>" />
@@ -386,18 +474,14 @@ class WP_Contact_Plugin {
             <?php esc_html_e( 'Ikona otwarta', 'wp-contact-plugin' ); ?>
             <input type="text" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[toggle_icon_open]" value="<?php echo esc_attr( $options['toggle_icon_open'] ); ?>" />
         </label>
-        <label style="display:block;margin-bottom:6px;">
-            <?php esc_html_e( 'Ikona WhatsApp (SVG lub klasa)', 'wp-contact-plugin' ); ?>
-            <textarea name="<?php echo esc_attr( self::OPTION_KEY ); ?>[icon_whatsapp]" rows="2" class="large-text code"><?php echo esc_textarea( $options['icon_whatsapp'] ); ?></textarea>
-        </label>
-        <label style="display:block;margin-bottom:6px;">
-            <?php esc_html_e( 'Ikona Telefon (SVG lub klasa)', 'wp-contact-plugin' ); ?>
-            <textarea name="<?php echo esc_attr( self::OPTION_KEY ); ?>[icon_phone]" rows="2" class="large-text code"><?php echo esc_textarea( $options['icon_phone'] ); ?></textarea>
-        </label>
-        <label style="display:block;margin-bottom:6px;">
-            <?php esc_html_e( 'Ikona E-mail (SVG lub klasa)', 'wp-contact-plugin' ); ?>
-            <textarea name="<?php echo esc_attr( self::OPTION_KEY ); ?>[icon_email]" rows="2" class="large-text code"><?php echo esc_textarea( $options['icon_email'] ); ?></textarea>
-        </label>
+
+        <?php $this->render_icon_picker( 'whatsapp', __( 'WhatsApp', 'wp-contact-plugin' ), $options, $icon_modes ); ?>
+        <?php $this->render_icon_picker( 'phone', __( 'Telefon', 'wp-contact-plugin' ), $options, $icon_modes ); ?>
+        <?php $this->render_icon_picker( 'email', __( 'E-mail', 'wp-contact-plugin' ), $options, $icon_modes ); ?>
+
+        <p class="description">
+            <?php esc_html_e( 'Wybierz domyślną ikonę, oficjalny znak marki (WhatsApp, Facebook, Instagram), własny kod SVG lub klasę z biblioteki ikon. Pamiętaj o zachowaniu kolorów i kształtów zgodnie z brand guidelines.', 'wp-contact-plugin' ); ?>
+        </p>
         <label style="display:block;margin-bottom:6px;">
             <?php esc_html_e( 'Rozmiar', 'wp-contact-plugin' ); ?>
             <select name="<?php echo esc_attr( self::OPTION_KEY ); ?>[size]">
@@ -458,10 +542,11 @@ class WP_Contact_Plugin {
         $layout_class    = 'floating' === $options['layout'] ? 'wp-contact-bar--floating' : 'wp-contact-bar--inline';
 
         $color = esc_attr( $options['bar_color'] );
+        $whatsapp_color = 'official' === ( $options['icon_mode_whatsapp'] ?? 'default' ) ? '#25D366' : ( $options['whatsapp_color'] ?: $color );
         ?>
         <div
             class="wp-contact-bar <?php echo esc_attr( $visibility_class ); ?> <?php echo esc_attr( $position_class ); ?> <?php echo esc_attr( $vertical_class ); ?> <?php echo esc_attr( $layout_class ); ?><?php echo 'yes' === $options['pulse'] ? ' wp-contact-bar--pulse' : ''; ?>"
-            style="--wp-contact-bar-color: <?php echo $color; ?>; --wp-contact-whatsapp-color: <?php echo esc_attr( $options['whatsapp_color'] ?: $color ); ?>; --wp-contact-phone-color: <?php echo esc_attr( $options['phone_color'] ?: $color ); ?>; --wp-contact-email-color: <?php echo esc_attr( $options['email_color'] ?: $color ); ?>; --wp-contact-offset-x: <?php echo intval( $options['offset_x'] ); ?>px; --wp-contact-offset-y: <?php echo intval( $options['offset_y'] + $options['cookie_offset'] ); ?>px; --wp-contact-size: <?php echo esc_attr( $this->map_size_to_px( $options['size'] ) ); ?>px;"
+            style="--wp-contact-bar-color: <?php echo $color; ?>; --wp-contact-whatsapp-color: <?php echo esc_attr( $whatsapp_color ); ?>; --wp-contact-phone-color: <?php echo esc_attr( $options['phone_color'] ?: $color ); ?>; --wp-contact-email-color: <?php echo esc_attr( $options['email_color'] ?: $color ); ?>; --wp-contact-offset-x: <?php echo intval( $options['offset_x'] ); ?>px; --wp-contact-offset-y: <?php echo intval( $options['offset_y'] + $options['cookie_offset'] ); ?>px; --wp-contact-size: <?php echo esc_attr( $this->map_size_to_px( $options['size'] ) ); ?>px;"
             data-floating="<?php echo esc_attr( $options['layout'] ); ?>"
         >
             <button class="wp-contact-bar__toggle" aria-expanded="false" aria-controls="wp-contact-bar-panel">
@@ -473,7 +558,7 @@ class WP_Contact_Plugin {
                 <?php if ( ! empty( $options['whatsapp_number'] ) ) : ?>
                     <a class="wp-contact-bar__link wp-contact-bar__link--whatsapp" href="<?php echo esc_url( 'https://wa.me/' . $options['whatsapp_number'] ); ?>" target="_blank" rel="noopener noreferrer">
                         <span aria-hidden="true" class="wp-contact-bar__icon-slot">
-                            <?php echo $options['icon_whatsapp'] ? wp_kses_post( $options['icon_whatsapp'] ) : '💬'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                            <?php echo $this->get_icon_markup( 'whatsapp', $options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                         </span>
                         <span class="screen-reader-text"><?php esc_html_e( 'WhatsApp', 'wp-contact-plugin' ); ?></span>
                     </a>
@@ -482,7 +567,7 @@ class WP_Contact_Plugin {
                 <?php if ( ! empty( $options['phone_number'] ) ) : ?>
                     <a class="wp-contact-bar__link wp-contact-bar__link--phone" href="<?php echo esc_url( 'tel:' . $options['phone_number'] ); ?>">
                         <span aria-hidden="true" class="wp-contact-bar__icon-slot">
-                            <?php echo $options['icon_phone'] ? wp_kses_post( $options['icon_phone'] ) : '📞'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                            <?php echo $this->get_icon_markup( 'phone', $options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                         </span>
                         <span class="screen-reader-text"><?php esc_html_e( 'Telefon', 'wp-contact-plugin' ); ?></span>
                     </a>
@@ -491,7 +576,7 @@ class WP_Contact_Plugin {
                 <?php if ( ! empty( $options['email_address'] ) ) : ?>
                     <a class="wp-contact-bar__link wp-contact-bar__link--email" href="<?php echo esc_url( 'mailto:' . $options['email_address'] ); ?>">
                         <span aria-hidden="true" class="wp-contact-bar__icon-slot">
-                            <?php echo $options['icon_email'] ? wp_kses_post( $options['icon_email'] ) : '✉️'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                            <?php echo $this->get_icon_markup( 'email', $options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                         </span>
                         <span class="screen-reader-text"><?php esc_html_e( 'E-mail', 'wp-contact-plugin' ); ?></span>
                     </a>

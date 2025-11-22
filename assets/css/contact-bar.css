@@ -14,18 +14,19 @@
     bottom: 0;
     inset-inline: 0;
     width: 100%;
-    justify-content: flex-end;
-    padding: calc(0.5rem + env(safe-area-inset-bottom)) 1rem 0.5rem;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    padding: calc(0.5rem + env(safe-area-inset-bottom)) 1rem 0.75rem;
     background: var(--wp-contact-bar-color, #1e73be);
     box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .wp-contact-bar--inline.wp-contact-bar--left {
-    justify-content: flex-start;
+    align-items: flex-start;
 }
 
 .wp-contact-bar--inline.wp-contact-bar--right {
-    justify-content: flex-end;
+    align-items: flex-end;
 }
 
 .wp-contact-bar--floating {
@@ -93,13 +94,13 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    margin-right: 0.75rem;
+    margin: 0;
     background: #fff;
     border-radius: var(--wp-contact-radius);
     padding: 0.35rem 0.5rem;
     box-shadow: var(--wp-contact-shadow);
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px);
     pointer-events: none;
     transition: opacity 0.25s ease, transform 0.3s ease;
     will-change: transform, opacity;
@@ -110,6 +111,14 @@
     padding: 0.5rem;
     margin: 0;
     align-items: stretch;
+}
+
+.wp-contact-bar--inline .wp-contact-bar__panel {
+    align-self: flex-end;
+}
+
+.wp-contact-bar--inline.wp-contact-bar--left .wp-contact-bar__panel {
+    align-self: flex-start;
 }
 
 .wp-contact-bar--floating.wp-contact-bar--left .wp-contact-bar__panel {
@@ -126,8 +135,12 @@
     pointer-events: auto;
 }
 
+.wp-contact-bar--top .wp-contact-bar__panel {
+    transform: translateY(-12px);
+}
+
 .wp-contact-bar--top.is-open .wp-contact-bar__panel {
-    transform: translateY(-8px);
+    transform: translateY(0);
 }
 
 .wp-contact-bar__link {
