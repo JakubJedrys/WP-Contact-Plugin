@@ -238,6 +238,13 @@
     height: 1.1em;
 }
 
+.wp-contact-bar__icon-image svg {
+    inline-size: 100%;
+    block-size: 100%;
+    fill: currentColor;
+    stroke: currentColor;
+}
+
 .screen-reader-text {
     position: absolute;
     width: 1px;
