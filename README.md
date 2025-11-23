@@ -26,6 +26,7 @@ Lekka wtyczka WordPress dodająca dolną belkę wysuwaną do góry lub pływają
 - Nazwij je zgodnie ze schematem `wp-contact-icon-{kanał}.svg`, gdzie `{kanał}` to: `whatsapp`, `phone`, `email`, `youtube`, `facebook`, `instagram` lub `linkedin`.
 - Po umieszczeniu plików w tym folderze wtyczka automatycznie zaczyta i wyświetli je zamiast ikon domyślnych.
 - Nie musisz kopiować samych `<path>` — do katalogu możesz wrzucić pełne pliki `.svg` (z gradientami, grupami itp.), a wtyczka je zsanityzuje i wstawi inline.
+- Jeżeli ikony na desktopie wyglądają na poszarpane, ustaw stałe rozmiary slotu i samego SVG w CSS, np.: `:root { --wp-contact-icon-slot: 48px; --wp-contact-icon-size: 24px; } .wp-contact-bar__link { transform: translateY(-1px); }`.
 
 ## Wymagania
 - WordPress 5.8+
