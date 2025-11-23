@@ -16,12 +16,8 @@ class WP_Contact_Plugin {
     const OPTION_KEY = 'wp_contact_plugin_options';
     const VERSION    = '1.2.0';
 
-    private $icon_base_url;
-
     public function __construct() {
         add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
-
-        $this->icon_base_url = plugin_dir_url( __FILE__ ) . 'assets/icons/';
 
         add_action( 'admin_menu', [ $this, 'register_settings_page' ] );
         add_action( 'admin_init', [ $this, 'register_settings' ] );
@@ -337,18 +333,26 @@ class WP_Contact_Plugin {
 
     private function get_official_icon_markup( $channel ) {
         $icons = [
-            'whatsapp' => 'whatsapp.svg',
-            'phone'    => 'phone.svg',
-            'email'    => 'email.svg',
+            'whatsapp' => 'fa-brands fa-whatsapp',
+            'phone'    => 'fa-solid fa-phone',
+            'email'    => 'fa-solid fa-envelope',
         ];
 
         if ( ! isset( $icons[ $channel ] ) ) {
             return '';
         }
 
-        $src = esc_url( $this->icon_base_url . $icons[ $channel ] );
+        $classes = esc_attr( $icons[ $channel ] );
 
-        return '<img src="' . $src . '" class="wp-contact-bar__icon-image" alt="" aria-hidden="true" loading="lazy" decoding="async" />';
+        return '<span class="wp-contact-bar__icon-image ' . $classes . '" aria-hidden="true"></span>';
+    }
+
+    private function is_using_official_icons( $options ) {
+        return in_array( 'official', [
+            $options['icon_mode_whatsapp'] ?? 'default',
+            $options['icon_mode_phone'] ?? 'default',
+            $options['icon_mode_email'] ?? 'default',
+        ], true );
     }
 
     private function get_default_icon( $channel ) {
@@ -515,6 +519,15 @@ class WP_Contact_Plugin {
 
         if ( empty( $options['phone_number'] ) && empty( $options['whatsapp_number'] ) && empty( $options['email_address'] ) ) {
             return;
+        }
+
+        if ( $this->is_using_official_icons( $options ) ) {
+            wp_enqueue_style(
+                'wp-contact-plugin-fontawesome',
+                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css',
+                [],
+                '6.5.2'
+            );
         }
 
         $plugin_url = plugin_dir_url( __FILE__ );
