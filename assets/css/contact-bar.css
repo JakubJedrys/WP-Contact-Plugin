@@ -33,9 +33,18 @@
     inset-inline-start: auto;
     inset-inline-end: auto;
     inline-size: max-content;
-    flex-direction: column-reverse;
     gap: 0.75rem;
     transform: translateZ(0);
+}
+
+.wp-contact-bar--floating.wp-contact-bar--bottom {
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+}
+
+.wp-contact-bar--floating.wp-contact-bar--top {
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .wp-contact-bar--floating.wp-contact-bar--right {
@@ -52,6 +61,14 @@
 
 .wp-contact-bar--floating.wp-contact-bar--top {
     top: calc(max(var(--wp-contact-offset-y, 0px), env(safe-area-inset-top)));
+}
+
+.wp-contact-bar--floating.wp-contact-bar--right {
+    align-items: flex-end;
+}
+
+.wp-contact-bar--floating.wp-contact-bar--left {
+    align-items: flex-start;
 }
 
 .wp-contact-bar__toggle {
@@ -136,7 +153,7 @@
 }
 
 .wp-contact-bar--top .wp-contact-bar__panel {
-    transform: translateY(-12px);
+    transform: translateY(12px);
 }
 
 .wp-contact-bar--top.is-open .wp-contact-bar__panel {
