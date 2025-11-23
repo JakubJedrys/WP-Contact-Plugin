@@ -178,10 +178,10 @@
 .wp-contact-bar__link--whatsapp { background: var(--wp-contact-whatsapp-color, var(--wp-contact-bar-color, #1e73be)); }
 .wp-contact-bar__link--phone { background: var(--wp-contact-phone-color, var(--wp-contact-bar-color, #1e73be)); }
 .wp-contact-bar__link--email { background: var(--wp-contact-email-color, var(--wp-contact-bar-color, #1e73be)); }
-.wp-contact-bar__link--youtube { background: #ff0000; }
-.wp-contact-bar__link--facebook { background: #1877f2; }
-.wp-contact-bar__link--instagram { background: #d62976; }
-.wp-contact-bar__link--linkedin { background: #0a66c2; }
+.wp-contact-bar__link--youtube { background: var(--wp-contact-youtube-color, #ff0000); }
+.wp-contact-bar__link--facebook { background: var(--wp-contact-facebook-color, #1877f2); }
+.wp-contact-bar__link--instagram { background: var(--wp-contact-instagram-color, #d62976); }
+.wp-contact-bar__link--linkedin { background: var(--wp-contact-linkedin-color, #0a66c2); }
 
 .wp-contact-bar__link:hover,
 .wp-contact-bar__link:focus {
