@@ -212,6 +212,9 @@ class WP_Contact_Plugin {
 
         $options['toggle_icon_closed'] = sanitize_text_field( $input['toggle_icon_closed'] ?? '☰' );
         $options['toggle_icon_open']   = sanitize_text_field( $input['toggle_icon_open'] ?? '✕' );
+        $options['toggle_icon_closed_size'] = $this->sanitize_icon_size( $input['toggle_icon_closed_size'] ?? '', 22 );
+        $options['toggle_icon_open_size']   = $this->sanitize_icon_size( $input['toggle_icon_open_size'] ?? '', 22 );
+        $options['icon_size']               = $this->sanitize_icon_size( $input['icon_size'] ?? '', 24 );
 
         $options['youtube_url']   = isset( $input['youtube_url'] ) ? esc_url_raw( trim( $input['youtube_url'] ) ) : '';
         $options['facebook_url']  = isset( $input['facebook_url'] ) ? esc_url_raw( trim( $input['facebook_url'] ) ) : '';
@@ -270,6 +273,9 @@ class WP_Contact_Plugin {
             'size'            => 'md',
             'toggle_icon_closed' => '☰',
             'toggle_icon_open'   => '✕',
+            'toggle_icon_closed_size' => 22,
+            'toggle_icon_open_size'   => 22,
+            'icon_size'               => 24,
             'pulse'              => 'no',
         ];
 
@@ -334,6 +340,24 @@ class WP_Contact_Plugin {
         $cleaned = preg_replace( '/[^0-9+]/', '', $number );
 
         return ltrim( $cleaned );
+    }
+
+    private function sanitize_icon_size( $value, $default ) {
+        if ( '' === $value ) {
+            return $default;
+        }
+
+        $size = absint( $value );
+
+        if ( $size < 8 ) {
+            return 8;
+        }
+
+        if ( $size > 128 ) {
+            return 128;
+        }
+
+        return $size;
     }
 
     private function get_icon_markup( $channel, $options ) {
@@ -662,9 +686,22 @@ class WP_Contact_Plugin {
             <input type="text" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[toggle_icon_open]" value="<?php echo esc_attr( $options['toggle_icon_open'] ); ?>" />
         </label>
 
+        <label style="display:block;margin-bottom:6px;">
+            <?php esc_html_e( 'Rozmiar ikony zamkniętej (px)', 'wp-contact-plugin' ); ?>
+            <input type="number" min="8" max="128" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[toggle_icon_closed_size]" value="<?php echo esc_attr( $options['toggle_icon_closed_size'] ); ?>" />
+        </label>
+        <label style="display:block;margin-bottom:12px;">
+            <?php esc_html_e( 'Rozmiar ikony otwartej (px)', 'wp-contact-plugin' ); ?>
+            <input type="number" min="8" max="128" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[toggle_icon_open_size]" value="<?php echo esc_attr( $options['toggle_icon_open_size'] ); ?>" />
+        </label>
+
         <p class="description">
-            <?php esc_html_e( 'Ikony WhatsApp, telefonu i e-mail zawsze korzystają z darmowych ikon Font Awesome.', 'wp-contact-plugin' ); ?>
+            <?php esc_html_e( 'Ikony WhatsApp, telefonu i e-mail zawsze korzystają z wbudowanych SVG lub podmienionych plików w assets/icons/.', 'wp-contact-plugin' ); ?>
         </p>
+        <label style="display:block;margin-bottom:12px;">
+            <?php esc_html_e( 'Rozmiar ikon kanałów (px)', 'wp-contact-plugin' ); ?>
+            <input type="number" min="8" max="128" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[icon_size]" value="<?php echo esc_attr( $options['icon_size'] ); ?>" />
+        </label>
         <label style="display:block;margin-bottom:6px;">
             <?php esc_html_e( 'Rozmiar', 'wp-contact-plugin' ); ?>
             <select name="<?php echo esc_attr( self::OPTION_KEY ); ?>[size]">
@@ -730,7 +767,7 @@ class WP_Contact_Plugin {
         ?>
         <div
             class="wp-contact-bar <?php echo esc_attr( $visibility_class ); ?> <?php echo esc_attr( $position_class ); ?> <?php echo esc_attr( $vertical_class ); ?> <?php echo esc_attr( $layout_class ); ?><?php echo 'yes' === $options['pulse'] ? ' wp-contact-bar--pulse' : ''; ?>"
-            style="--wp-contact-bar-color: <?php echo $color; ?>; --wp-contact-whatsapp-color: <?php echo esc_attr( $whatsapp_color ); ?>; --wp-contact-phone-color: <?php echo esc_attr( $options['phone_color'] ?: $color ); ?>; --wp-contact-email-color: <?php echo esc_attr( $options['email_color'] ?: $color ); ?>; --wp-contact-youtube-color: <?php echo esc_attr( $options['youtube_color'] ?: '#ff0000' ); ?>; --wp-contact-facebook-color: <?php echo esc_attr( $options['facebook_color'] ?: '#1877f2' ); ?>; --wp-contact-instagram-color: <?php echo esc_attr( $options['instagram_color'] ?: '#d62976' ); ?>; --wp-contact-linkedin-color: <?php echo esc_attr( $options['linkedin_color'] ?: '#0a66c2' ); ?>; --wp-contact-offset-x: <?php echo intval( $options['offset_x'] ); ?>px; --wp-contact-offset-y: <?php echo intval( $options['offset_y'] + $options['cookie_offset'] ); ?>px; --wp-contact-size: <?php echo esc_attr( $this->map_size_to_px( $options['size'] ) ); ?>px;"
+            style="--wp-contact-bar-color: <?php echo $color; ?>; --wp-contact-whatsapp-color: <?php echo esc_attr( $whatsapp_color ); ?>; --wp-contact-phone-color: <?php echo esc_attr( $options['phone_color'] ?: $color ); ?>; --wp-contact-email-color: <?php echo esc_attr( $options['email_color'] ?: $color ); ?>; --wp-contact-youtube-color: <?php echo esc_attr( $options['youtube_color'] ?: '#ff0000' ); ?>; --wp-contact-facebook-color: <?php echo esc_attr( $options['facebook_color'] ?: '#1877f2' ); ?>; --wp-contact-instagram-color: <?php echo esc_attr( $options['instagram_color'] ?: '#d62976' ); ?>; --wp-contact-linkedin-color: <?php echo esc_attr( $options['linkedin_color'] ?: '#0a66c2' ); ?>; --wp-contact-offset-x: <?php echo intval( $options['offset_x'] ); ?>px; --wp-contact-offset-y: <?php echo intval( $options['offset_y'] + $options['cookie_offset'] ); ?>px; --wp-contact-size: <?php echo esc_attr( $this->map_size_to_px( $options['size'] ) ); ?>px; --wp-contact-icon-size: <?php echo intval( $options['icon_size'] ); ?>px; --wp-contact-icon-slot: <?php echo max( intval( $options['icon_size'] ) + 8, $this->map_size_to_px( $options['size'] ) - 8 ); ?>px; --wp-contact-toggle-closed-size: <?php echo intval( $options['toggle_icon_closed_size'] ); ?>px; --wp-contact-toggle-open-size: <?php echo intval( $options['toggle_icon_open_size'] ); ?>px;"
             data-floating="<?php echo esc_attr( $options['layout'] ); ?>"
         >
             <button class="wp-contact-bar__toggle" aria-expanded="false" aria-controls="wp-contact-bar-panel">

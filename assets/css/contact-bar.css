@@ -209,8 +209,13 @@
     display: inline-block;
 }
 
+.wp-contact-bar__icon--closed {
+    font-size: var(--wp-contact-toggle-closed-size, calc(var(--wp-contact-size, 54px) / 2.5));
+}
+
 .wp-contact-bar__icon--open {
     display: none;
+    font-size: var(--wp-contact-toggle-open-size, calc(var(--wp-contact-size, 54px) / 2.5));
 }
 
 .wp-contact-bar.is-open .wp-contact-bar__icon--closed {
@@ -246,13 +251,6 @@
     fill: currentColor;
     stroke: currentColor;
     shape-rendering: geometricPrecision;
-}
-
-.wp-contact-bar__icon-image svg {
-    inline-size: 100%;
-    block-size: 100%;
-    fill: currentColor;
-    stroke: currentColor;
 }
 
 .screen-reader-text {
