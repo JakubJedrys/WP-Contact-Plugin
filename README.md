@@ -22,9 +22,9 @@ Lekka wtyczka WordPress dodająca dolną belkę wysuwaną do góry lub pływają
 - **Ikony i animacje**: wybierz domyślne ikony, oficjalne znaki marek (bez modyfikacji kolorów/kształtów), własny kod SVG lub klasy ikon, ustaw inne ikony otwarte/zamknięte, włącz pulsowanie i wybierz rozmiar przycisków.
 
 ### Własne pliki SVG
-- Wgraj własne pliki ikon do katalogu `wp-content/uploads/wp-contact-plugin/`.
+- Dodaj własne pliki ikon do katalogu `assets/icons/` bezpośrednio we wtyczce (np. commit do repozytorium lub dopisz do paczki ZIP).
 - Nazwij je zgodnie ze schematem `wp-contact-icon-{kanał}.svg`, gdzie `{kanał}` to: `whatsapp`, `phone`, `email`, `youtube`, `facebook`, `instagram` lub `linkedin`.
-- Po zapisaniu plików wtyczka automatycznie zaczyta i wyświetli je zamiast ikon domyślnych.
+- Po umieszczeniu plików w tym folderze wtyczka automatycznie zaczyta i wyświetli je zamiast ikon domyślnych.
 
 ## Wymagania
 - WordPress 5.8+

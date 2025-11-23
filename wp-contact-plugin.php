@@ -361,19 +361,13 @@ class WP_Contact_Plugin {
     }
 
     private function get_custom_icon_markup( $channel ) {
-        $uploads = wp_upload_dir();
-
-        if ( empty( $uploads['basedir'] ) || ! is_dir( $uploads['basedir'] ) ) {
-            return '';
-        }
-
         $channel_slug = sanitize_key( $channel );
 
         if ( '' === $channel_slug ) {
             return '';
         }
 
-        $custom_dir  = trailingslashit( $uploads['basedir'] ) . 'wp-contact-plugin/';
+        $custom_dir  = trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/icons/';
         $custom_file = $custom_dir . 'wp-contact-icon-' . $channel_slug . '.svg';
 
         if ( ! file_exists( $custom_file ) || ! is_readable( $custom_file ) ) {
