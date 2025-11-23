@@ -337,27 +337,95 @@ class WP_Contact_Plugin {
     }
 
     private function get_icon_markup( $channel, $options ) {
-        return $this->get_official_icon_markup( $channel );
-    }
+        $custom_icon = $this->get_custom_icon_markup( $channel );
 
-    private function get_official_icon_markup( $channel ) {
+        if ( $custom_icon ) {
+            return $custom_icon;
+        }
+
         $icons = [
-            'whatsapp' => 'fa-brands fa-whatsapp',
-            'phone'    => 'fa-solid fa-phone',
-            'email'    => 'fa-solid fa-envelope',
-            'youtube'  => 'fa-brands fa-youtube',
-            'facebook' => 'fa-brands fa-facebook-f',
-            'instagram'=> 'fa-brands fa-instagram',
-            'linkedin' => 'fa-brands fa-linkedin-in',
+            'whatsapp' => '<path d="M12 2a10 10 0 0 0-9.64 12.92l-1.2 3.84a.75.75 0 0 0 .92.93l3.9-1A10 10 0 1 0 12 2Zm7.19 13.26c0 .44-.34.8-.78.82A8.62 8.62 0 0 1 6.9 5.56c.02-.44.38-.78.82-.78h1.04a.75.75 0 0 1 .73.56l.6 2.61a.75.75 0 0 1-.2.7l-.52.51a.74.74 0 0 0-.17.75 6.45 6.45 0 0 0 3.69 3.69.74.74 0 0 0 .75-.17l.5-.52a.75.75 0 0 1 .71-.2l2.61.6a.75.75 0 0 1 .56.73Z"/>',
+            'phone'    => '<path d="M3.5 4.25A1.75 1.75 0 0 1 5.25 2.5h2.15c.74 0 1.4.47 1.63 1.17l.66 2a1.5 1.5 0 0 1-.39 1.53l-.9.9a.5.5 0 0 0-.11.53 9.76 9.76 0 0 0 5.25 5.25.5.5 0 0 0 .53-.1l.9-.9a1.5 1.5 0 0 1 1.53-.4l2 .66c.7.23 1.17.9 1.17 1.64v2.14A1.75 1.75 0 0 1 18.75 21.5C10.63 21.5 4.5 15.37 4.5 7.25Z"/>',
+            'email'    => '<path d="M4.5 5h15a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-11A1.5 1.5 0 0 1 4.5 5Zm.75 2 6.75 4.25L18.75 7Z"/><path d="M18.75 17h-13.5L9.9 12.7l1.35.85a1.5 1.5 0 0 0 1.5 0l1.35-.85Z"/>',
+            'youtube'  => '<path d="M21.5 8.2c-.14-1.15-.92-2.05-1.88-2.15C17.15 5.75 14 5.75 12 5.75s-5.15 0-7.62.3c-.96.1-1.74 1-1.88 2.15A31 31 0 0 0 2.25 12a31 31 0 0 0 .25 3.8c.14 1.15.92 2.05 1.88 2.15 2.47.3 5.62.3 7.62.3s5.15 0 7.62-.3c.96-.1 1.74-1 1.88-2.15.17-1.27.25-2.54.25-3.8 0-1.26-.08-2.53-.25-3.8ZM10.5 15.2V8.8l4.5 3.2Z"/>',
+            'facebook' => '<path d="M14 10h2.25a.75.75 0 0 0 .75-.75V7.25A.75.75 0 0 0 16.25 6H14V5.25C14 4.56 14.56 4 15.25 4H17a1 1 0 0 0 1-1V2.5a.75.75 0 0 0-.75-.75h-2.5A4.75 4.75 0 0 0 10 6.5V6.7c0 .72.58 1.3 1.3 1.3H12v2h-1.5A.5.5 0 0 0 10 10.5V13h2v7a1 1 0 0 0 1 1h2.25a.75.75 0 0 0 .75-.75V13h1.25a.75.75 0 0 0 .75-.75v-1.5A.75.75 0 0 0 17.25 10H16V8h-1v2Z"/>',
+            'instagram'=> '<path d="M7 4.5h10A2.5 2.5 0 0 1 19.5 7v10A2.5 2.5 0 0 1 17 19.5H7A2.5 2.5 0 0 1 4.5 17V7A2.5 2.5 0 0 1 7 4.5Zm0 1.5A1 1 0 0 0 6 7v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1Zm9.25 1.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12 9.25A2.75 2.75 0 1 1 9.25 12 2.75 2.75 0 0 1 12 9.25ZM8.75 12A3.25 3.25 0 1 0 12 8.75 3.25 3.25 0 0 0 8.75 12Z"/>',
+            'linkedin' => '<path d="M6.4 9.25v9a.75.75 0 0 1-.75.75H3.6a.75.75 0 0 1-.75-.75v-9a.75.75 0 0 1 .75-.75h2.05a.75.75 0 0 1 .75.75ZM5.03 4.25a1.75 1.75 0 1 1-1.74 1.75 1.74 1.74 0 0 1 1.74-1.75Zm3.97 5a.75.75 0 0 0-.75.75v8.25a.75.75 0 0 0 .75.75H11a.75.75 0 0 0 .75-.75V14c0-1.24.9-2.25 2-2.25s2 1.01 2 2.25v4.25a.75.75 0 0 0 .75.75h1.97a.75.75 0 0 0 .75-.75V13c0-2.7-1.98-4.75-4.25-4.75-1.05 0-1.99.5-2.5 1.05V10a.75.75 0 0 0-.75-.75Z"/>'
         ];
 
         if ( ! isset( $icons[ $channel ] ) ) {
             return '';
         }
 
-        $classes = esc_attr( $icons[ $channel ] );
+        return '<span class="wp-contact-bar__icon-image" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg">' . $icons[ $channel ] . '</svg></span>';
+    }
 
-        return '<span class="wp-contact-bar__icon-image ' . $classes . '" aria-hidden="true"></span>';
+    private function get_custom_icon_markup( $channel ) {
+        $channel_slug = sanitize_key( $channel );
+
+        if ( '' === $channel_slug ) {
+            return '';
+        }
+
+        $custom_dir  = trailingslashit( plugin_dir_path( __FILE__ ) ) . 'assets/icons/';
+        $custom_file = $custom_dir . 'wp-contact-icon-' . $channel_slug . '.svg';
+
+        if ( ! file_exists( $custom_file ) || ! is_readable( $custom_file ) ) {
+            return '';
+        }
+
+        $svg_markup = file_get_contents( $custom_file );
+
+        if ( false === $svg_markup ) {
+            return '';
+        }
+
+        $allowed_svg_tags = [
+            'svg'            => [
+                'xmlns'               => true,
+                'xmlns:xlink'         => true,
+                'viewBox'             => true,
+                'viewbox'             => true,
+                'width'               => true,
+                'height'              => true,
+                'preserveAspectRatio' => true,
+                'aria-hidden'         => true,
+                'aria-label'          => true,
+                'role'                => true,
+                'focusable'           => true,
+                'fill'                => true,
+                'stroke'              => true,
+                'stroke-width'        => true,
+                'stroke-linecap'      => true,
+                'stroke-linejoin'     => true,
+                'class'               => true,
+            ],
+            'g'              => [ 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'transform' => true, 'opacity' => true, 'class' => true ],
+            'path'           => [ 'd' => true, 'fill' => true, 'fill-rule' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'stroke-miterlimit' => true, 'opacity' => true, 'class' => true ],
+            'circle'         => [ 'cx' => true, 'cy' => true, 'r' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'ellipse'        => [ 'cx' => true, 'cy' => true, 'rx' => true, 'ry' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'rect'           => [ 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true, 'ry' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'line'           => [ 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'polyline'       => [ 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'polygon'        => [ 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'title'          => [],
+            'desc'           => [],
+            'defs'           => [],
+            'clipPath'       => [ 'id' => true ],
+            'mask'           => [ 'id' => true ],
+            'symbol'         => [ 'id' => true, 'viewBox' => true, 'viewbox' => true ],
+            'use'            => [ 'href' => true, 'xlink:href' => true ],
+            'linearGradient' => [ 'id' => true, 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true, 'gradientUnits' => true ],
+            'stop'           => [ 'offset' => true, 'stop-color' => true, 'stop-opacity' => true ],
+        ];
+
+        $sanitized_svg = wp_kses( $svg_markup, $allowed_svg_tags );
+
+        if ( '' === trim( $sanitized_svg ) || ! preg_match( '/<svg\b[^>]*>/i', $sanitized_svg ) ) {
+            return '';
+        }
+
+        return '<span class="wp-contact-bar__icon-image" aria-hidden="true">' . $sanitized_svg . '</span>';
     }
 
     public function render_phone_field() {
@@ -580,13 +648,6 @@ class WP_Contact_Plugin {
         if ( empty( $options['phone_number'] ) && empty( $options['whatsapp_number'] ) && empty( $options['email_address'] ) && empty( $options['youtube_url'] ) && empty( $options['facebook_url'] ) && empty( $options['instagram_url'] ) && empty( $options['linkedin_url'] ) ) {
             return;
         }
-
-        wp_enqueue_style(
-            'wp-contact-plugin-fontawesome',
-            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css',
-            [],
-            '6.5.2'
-        );
 
         $plugin_url = plugin_dir_url( __FILE__ );
         wp_enqueue_style( 'wp-contact-plugin', $plugin_url . 'assets/css/contact-bar.css', [], self::VERSION );
