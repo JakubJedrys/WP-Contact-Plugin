@@ -21,6 +21,11 @@ Lekka wtyczka WordPress dodająca dolną belkę wysuwaną do góry lub pływają
 - **Kolory**: ustaw globalny kolor oraz indywidualne kolory przycisków WhatsApp/Telefon/E-mail.
 - **Ikony i animacje**: wybierz domyślne ikony, oficjalne znaki marek (bez modyfikacji kolorów/kształtów), własny kod SVG lub klasy ikon, ustaw inne ikony otwarte/zamknięte, włącz pulsowanie i wybierz rozmiar przycisków.
 
+### Własne pliki SVG
+- Dodaj własne pliki ikon do katalogu `assets/icons/` bezpośrednio we wtyczce (np. commit do repozytorium lub dopisz do paczki ZIP).
+- Nazwij je zgodnie ze schematem `wp-contact-icon-{kanał}.svg`, gdzie `{kanał}` to: `whatsapp`, `phone`, `email`, `youtube`, `facebook`, `instagram` lub `linkedin`.
+- Po umieszczeniu plików w tym folderze wtyczka automatycznie zaczyta i wyświetli je zamiast ikon domyślnych.
+
 ## Wymagania
 - WordPress 5.8+
 - PHP 7.4+
