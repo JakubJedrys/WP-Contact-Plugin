@@ -19,7 +19,14 @@ Lekka wtyczka WordPress dodająca dolną belkę wysuwaną do góry lub pływają
 - **Układ**: wybierz „Dolna belka” lub „Pływające koło”.
 - **Położenie**: lewa/prawa krawędź oraz góra/dół z ręcznymi offsetami X/Y i dodatkowym marginesem pod belkę cookies.
 - **Kolory**: ustaw globalny kolor oraz indywidualne kolory przycisków WhatsApp/Telefon/E-mail.
-- **Ikony i animacje**: wybierz domyślne ikony, oficjalne znaki marek (bez modyfikacji kolorów/kształtów), własny kod SVG lub klasy ikon, ustaw inne ikony otwarte/zamknięte, włącz pulsowanie i wybierz rozmiar przycisków.
+- **Ikony i animacje**: wybierz domyślne ikony, oficjalne znaki marek (bez modyfikacji kolorów/kształtów), własny kod SVG lub klasy ikon, ustaw inne ikony otwarte/zamknięte z osobnymi rozmiarami, włącz pulsowanie i wybierz rozmiar przycisków oraz samych ikon kanałów.
+
+### Własne pliki SVG
+- Dodaj własne pliki ikon do katalogu `assets/icons/` bezpośrednio we wtyczce (np. commit do repozytorium lub dopisz do paczki ZIP).
+- Nazwij je zgodnie ze schematem `wp-contact-icon-{kanał}.svg`, gdzie `{kanał}` to: `whatsapp`, `phone`, `email`, `youtube`, `facebook`, `instagram` lub `linkedin`.
+- Po umieszczeniu plików w tym folderze wtyczka automatycznie zaczyta i wyświetli je zamiast ikon domyślnych.
+- Nie musisz kopiować samych `<path>` — do katalogu możesz wrzucić pełne pliki `.svg` (z gradientami, grupami itp.), a wtyczka je zsanityzuje i wstawi inline.
+- Jeżeli ikony na desktopie wyglądają na poszarpane, ustaw stałe rozmiary slotu i samego SVG w CSS, np.: `:root { --wp-contact-icon-slot: 48px; --wp-contact-icon-size: 24px; } .wp-contact-bar__link { transform: translateY(-1px); }`.
 
 ## Wymagania
 - WordPress 5.8+
