@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Kontakt Dock
  * Description: Dodaje dolną belkę lub pływające koło kontaktowe z szybkim dostępem do WhatsApp, telefonu i e-maila.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Jakub Jędrys
  * Requires PHP: 7.4
  * Requires at least: 5.8
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WP_Contact_Plugin {
     const OPTION_KEY = 'wp_contact_plugin_options';
-    const VERSION    = '1.2.0';
+    const VERSION    = '1.3.0';
 
     public function __construct() {
         add_action( 'plugins_loaded', [ $this, 'load_textdomain' ] );
@@ -74,6 +74,38 @@ class WP_Contact_Plugin {
             'email_address',
             __( 'Adres e-mail (mailto:)', 'wp-contact-plugin' ),
             [ $this, 'render_email_field' ],
+            'wp-contact-plugin',
+            'wp_contact_plugin_section'
+        );
+
+        add_settings_field(
+            'youtube_url',
+            __( 'YouTube URL', 'wp-contact-plugin' ),
+            [ $this, 'render_youtube_field' ],
+            'wp-contact-plugin',
+            'wp_contact_plugin_section'
+        );
+
+        add_settings_field(
+            'facebook_url',
+            __( 'Facebook URL', 'wp-contact-plugin' ),
+            [ $this, 'render_facebook_field' ],
+            'wp-contact-plugin',
+            'wp_contact_plugin_section'
+        );
+
+        add_settings_field(
+            'instagram_url',
+            __( 'Instagram URL', 'wp-contact-plugin' ),
+            [ $this, 'render_instagram_field' ],
+            'wp-contact-plugin',
+            'wp_contact_plugin_section'
+        );
+
+        add_settings_field(
+            'linkedin_url',
+            __( 'LinkedIn URL', 'wp-contact-plugin' ),
+            [ $this, 'render_linkedin_field' ],
             'wp-contact-plugin',
             'wp_contact_plugin_section'
         );
@@ -142,10 +174,10 @@ class WP_Contact_Plugin {
         $options['whatsapp_number'] = isset( $input['whatsapp_number'] ) ? $this->sanitize_contact_number( $input['whatsapp_number'] ) : '';
         $options['email_address']   = isset( $input['email_address'] ) ? sanitize_email( $input['email_address'] ) : '';
 
-        $options['bar_color'] = $this->sanitize_hex_color_or_default( $input['bar_color'] ?? '' );
-        $options['whatsapp_color'] = $this->sanitize_hex_color_or_default( $input['whatsapp_color'] ?? '', '#25D366' );
-        $options['phone_color']    = $this->sanitize_hex_color_or_default( $input['phone_color'] ?? '', '#1e73be' );
-        $options['email_color']    = $this->sanitize_hex_color_or_default( $input['email_color'] ?? '', '#ed6a5a' );
+        $options['bar_color'] = $this->sanitize_color_value( $input['bar_color'] ?? '' );
+        $options['whatsapp_color'] = $this->sanitize_color_value( $input['whatsapp_color'] ?? '', '#25D366' );
+        $options['phone_color']    = $this->sanitize_color_value( $input['phone_color'] ?? '', '#1e73be' );
+        $options['email_color']    = $this->sanitize_color_value( $input['email_color'] ?? '', '#ed6a5a' );
 
         $visibility_options    = [ 'everywhere', 'mobile', 'desktop' ];
         $options['visibility'] = in_array( $input['visibility'] ?? 'everywhere', $visibility_options, true ) ? $input['visibility'] : 'everywhere';
@@ -176,6 +208,11 @@ class WP_Contact_Plugin {
 
         $options['toggle_icon_closed'] = sanitize_text_field( $input['toggle_icon_closed'] ?? '☰' );
         $options['toggle_icon_open']   = sanitize_text_field( $input['toggle_icon_open'] ?? '✕' );
+
+        $options['youtube_url']   = isset( $input['youtube_url'] ) ? esc_url_raw( trim( $input['youtube_url'] ) ) : '';
+        $options['facebook_url']  = isset( $input['facebook_url'] ) ? esc_url_raw( trim( $input['facebook_url'] ) ) : '';
+        $options['instagram_url'] = isset( $input['instagram_url'] ) ? esc_url_raw( trim( $input['instagram_url'] ) ) : '';
+        $options['linkedin_url']  = isset( $input['linkedin_url'] ) ? esc_url_raw( trim( $input['linkedin_url'] ) ) : '';
 
         $options['pulse'] = ! empty( $input['pulse'] ) ? 'yes' : 'no';
 
@@ -211,6 +248,10 @@ class WP_Contact_Plugin {
             'whatsapp_color'  => '#25D366',
             'phone_color'     => '#1e73be',
             'email_color'     => '#ed6a5a',
+            'youtube_url'     => '',
+            'facebook_url'    => '',
+            'instagram_url'   => '',
+            'linkedin_url'    => '',
             'visibility'      => 'everywhere',
             'position'        => 'right',
             'vertical'        => 'bottom',
@@ -229,12 +270,56 @@ class WP_Contact_Plugin {
         return wp_parse_args( $options, $defaults );
     }
 
-    private function sanitize_hex_color_or_default( $color, $default = '#1e73be' ) {
-        if ( is_string( $color ) && preg_match( '/^#(?:[0-9a-fA-F]{3}){1,2}$/', $color ) ) {
+    private function sanitize_color_value( $color, $default = '#1e73be' ) {
+        if ( ! is_string( $color ) ) {
+            return $default;
+        }
+
+        $color = trim( $color );
+
+        if ( $this->is_hex_color( $color ) ) {
+            return $color;
+        }
+
+        if ( $this->is_rgb_color( $color ) ) {
             return $color;
         }
 
         return $default;
+    }
+
+    private function is_hex_color( $color ) {
+        return is_string( $color ) && preg_match( '/^#(?:[0-9a-fA-F]{3}){1,2}$/', $color );
+    }
+
+    private function is_rgb_color( $color ) {
+        if ( ! is_string( $color ) ) {
+            return false;
+        }
+
+        if ( ! preg_match( '/^rgb\s*\(([^)]+)\)$/i', $color, $matches ) ) {
+            return false;
+        }
+
+        $parts = array_map( 'trim', explode( ',', $matches[1] ) );
+
+        if ( 3 !== count( $parts ) ) {
+            return false;
+        }
+
+        foreach ( $parts as $part ) {
+            if ( ! is_numeric( $part ) ) {
+                return false;
+            }
+
+            $value = (int) $part;
+
+            if ( $value < 0 || $value > 255 ) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function sanitize_contact_number( $number ) {
@@ -252,6 +337,10 @@ class WP_Contact_Plugin {
             'whatsapp' => 'fa-brands fa-whatsapp',
             'phone'    => 'fa-solid fa-phone',
             'email'    => 'fa-solid fa-envelope',
+            'youtube'  => 'fa-brands fa-youtube',
+            'facebook' => 'fa-brands fa-facebook-f',
+            'instagram'=> 'fa-brands fa-instagram',
+            'linkedin' => 'fa-brands fa-linkedin-in',
         ];
 
         if ( ! isset( $icons[ $channel ] ) ) {
@@ -285,28 +374,73 @@ class WP_Contact_Plugin {
         <?php
     }
 
-    public function render_color_field() {
+    public function render_youtube_field() {
         $options = $this->get_options();
         ?>
-        <input type="color" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[bar_color]" value="<?php echo esc_attr( $options['bar_color'] ); ?>" class="regular-text" />
-        <p class="description"><?php esc_html_e( 'Wybierz kolor tła belki / koła oraz kolor domyślny ikon.', 'wp-contact-plugin' ); ?></p>
+        <input type="url" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[youtube_url]" value="<?php echo esc_attr( $options['youtube_url'] ); ?>" class="regular-text" placeholder="https://www.youtube.com/@kanal" />
+        <?php
+    }
+
+    public function render_facebook_field() {
+        $options = $this->get_options();
+        ?>
+        <input type="url" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[facebook_url]" value="<?php echo esc_attr( $options['facebook_url'] ); ?>" class="regular-text" placeholder="https://www.facebook.com/profil" />
+        <?php
+    }
+
+    public function render_instagram_field() {
+        $options = $this->get_options();
+        ?>
+        <input type="url" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[instagram_url]" value="<?php echo esc_attr( $options['instagram_url'] ); ?>" class="regular-text" placeholder="https://www.instagram.com/profil" />
+        <?php
+    }
+
+    public function render_linkedin_field() {
+        $options = $this->get_options();
+        ?>
+        <input type="url" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[linkedin_url]" value="<?php echo esc_attr( $options['linkedin_url'] ); ?>" class="regular-text" placeholder="https://www.linkedin.com/in/profil" />
+        <?php
+    }
+
+    public function render_color_field() {
+        $options = $this->get_options();
+        $color_value = $options['bar_color'];
+        $color_picker_value = $this->is_hex_color( $color_value ) ? $color_value : '#1e73be';
+        ?>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <input type="color" value="<?php echo esc_attr( $color_picker_value ); ?>" oninput="this.nextElementSibling.value = this.value" aria-label="<?php esc_attr_e( 'Wybierz kolor', 'wp-contact-plugin' ); ?>" />
+            <input type="text" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[bar_color]" value="<?php echo esc_attr( $color_value ); ?>" class="regular-text" placeholder="#1e73be lub rgb(30, 115, 190)" />
+        </div>
+        <p class="description"><?php esc_html_e( 'Podaj kolor w formacie HEX (z #) lub rgb(0-255,0-255,0-255).', 'wp-contact-plugin' ); ?></p>
         <?php
     }
 
     public function render_button_colors_field() {
         $options = $this->get_options();
+        $whatsapp_picker = $this->is_hex_color( $options['whatsapp_color'] ) ? $options['whatsapp_color'] : '#25D366';
+        $phone_picker    = $this->is_hex_color( $options['phone_color'] ) ? $options['phone_color'] : '#1e73be';
+        $email_picker    = $this->is_hex_color( $options['email_color'] ) ? $options['email_color'] : '#ed6a5a';
         ?>
         <label style="display:block;margin-bottom:6px;">
             <?php esc_html_e( 'WhatsApp', 'wp-contact-plugin' ); ?>
-            <input type="color" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[whatsapp_color]" value="<?php echo esc_attr( $options['whatsapp_color'] ); ?>" />
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <input type="color" value="<?php echo esc_attr( $whatsapp_picker ); ?>" oninput="this.nextElementSibling.value = this.value" aria-label="<?php esc_attr_e( 'Wybierz kolor WhatsApp', 'wp-contact-plugin' ); ?>" />
+                <input type="text" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[whatsapp_color]" value="<?php echo esc_attr( $options['whatsapp_color'] ); ?>" placeholder="#25D366 lub rgb(37, 211, 102)" />
+            </div>
         </label>
         <label style="display:block;margin-bottom:6px;">
             <?php esc_html_e( 'Telefon', 'wp-contact-plugin' ); ?>
-            <input type="color" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[phone_color]" value="<?php echo esc_attr( $options['phone_color'] ); ?>" />
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <input type="color" value="<?php echo esc_attr( $phone_picker ); ?>" oninput="this.nextElementSibling.value = this.value" aria-label="<?php esc_attr_e( 'Wybierz kolor telefonu', 'wp-contact-plugin' ); ?>" />
+                <input type="text" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[phone_color]" value="<?php echo esc_attr( $options['phone_color'] ); ?>" placeholder="#1e73be lub rgb(30, 115, 190)" />
+            </div>
         </label>
         <label style="display:block;">
             <?php esc_html_e( 'E-mail', 'wp-contact-plugin' ); ?>
-            <input type="color" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[email_color]" value="<?php echo esc_attr( $options['email_color'] ); ?>" />
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <input type="color" value="<?php echo esc_attr( $email_picker ); ?>" oninput="this.nextElementSibling.value = this.value" aria-label="<?php esc_attr_e( 'Wybierz kolor e-mail', 'wp-contact-plugin' ); ?>" />
+                <input type="text" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[email_color]" value="<?php echo esc_attr( $options['email_color'] ); ?>" placeholder="#ed6a5a lub rgb(237, 106, 90)" />
+            </div>
         </label>
         <p class="description"><?php esc_html_e( 'Kolory per przycisk. Jeśli puste, użyty zostanie kolor globalny.', 'wp-contact-plugin' ); ?></p>
         <?php
@@ -403,7 +537,7 @@ class WP_Contact_Plugin {
     public function enqueue_assets() {
         $options = $this->get_options();
 
-        if ( empty( $options['phone_number'] ) && empty( $options['whatsapp_number'] ) && empty( $options['email_address'] ) ) {
+        if ( empty( $options['phone_number'] ) && empty( $options['whatsapp_number'] ) && empty( $options['email_address'] ) && empty( $options['youtube_url'] ) && empty( $options['facebook_url'] ) && empty( $options['instagram_url'] ) && empty( $options['linkedin_url'] ) ) {
             return;
         }
 
@@ -436,7 +570,7 @@ class WP_Contact_Plugin {
     public function render_contact_bar() {
         $options = $this->get_options();
 
-        if ( empty( $options['phone_number'] ) && empty( $options['whatsapp_number'] ) && empty( $options['email_address'] ) ) {
+        if ( empty( $options['phone_number'] ) && empty( $options['whatsapp_number'] ) && empty( $options['email_address'] ) && empty( $options['youtube_url'] ) && empty( $options['facebook_url'] ) && empty( $options['instagram_url'] ) && empty( $options['linkedin_url'] ) ) {
             return;
         }
 
@@ -489,6 +623,42 @@ class WP_Contact_Plugin {
                             <?php echo $this->get_icon_markup( 'email', $options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                         </span>
                         <span class="screen-reader-text"><?php esc_html_e( 'E-mail', 'wp-contact-plugin' ); ?></span>
+                    </a>
+                <?php endif; ?>
+
+                <?php if ( ! empty( $options['youtube_url'] ) ) : ?>
+                    <a class="wp-contact-bar__link wp-contact-bar__link--youtube" href="<?php echo esc_url( $options['youtube_url'] ); ?>" target="_blank" rel="noopener noreferrer">
+                        <span aria-hidden="true" class="wp-contact-bar__icon-slot">
+                            <?php echo $this->get_icon_markup( 'youtube', $options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                        </span>
+                        <span class="screen-reader-text"><?php esc_html_e( 'YouTube', 'wp-contact-plugin' ); ?></span>
+                    </a>
+                <?php endif; ?>
+
+                <?php if ( ! empty( $options['facebook_url'] ) ) : ?>
+                    <a class="wp-contact-bar__link wp-contact-bar__link--facebook" href="<?php echo esc_url( $options['facebook_url'] ); ?>" target="_blank" rel="noopener noreferrer">
+                        <span aria-hidden="true" class="wp-contact-bar__icon-slot">
+                            <?php echo $this->get_icon_markup( 'facebook', $options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                        </span>
+                        <span class="screen-reader-text"><?php esc_html_e( 'Facebook', 'wp-contact-plugin' ); ?></span>
+                    </a>
+                <?php endif; ?>
+
+                <?php if ( ! empty( $options['instagram_url'] ) ) : ?>
+                    <a class="wp-contact-bar__link wp-contact-bar__link--instagram" href="<?php echo esc_url( $options['instagram_url'] ); ?>" target="_blank" rel="noopener noreferrer">
+                        <span aria-hidden="true" class="wp-contact-bar__icon-slot">
+                            <?php echo $this->get_icon_markup( 'instagram', $options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                        </span>
+                        <span class="screen-reader-text"><?php esc_html_e( 'Instagram', 'wp-contact-plugin' ); ?></span>
+                    </a>
+                <?php endif; ?>
+
+                <?php if ( ! empty( $options['linkedin_url'] ) ) : ?>
+                    <a class="wp-contact-bar__link wp-contact-bar__link--linkedin" href="<?php echo esc_url( $options['linkedin_url'] ); ?>" target="_blank" rel="noopener noreferrer">
+                        <span aria-hidden="true" class="wp-contact-bar__icon-slot">
+                            <?php echo $this->get_icon_markup( 'linkedin', $options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                        </span>
+                        <span class="screen-reader-text"><?php esc_html_e( 'LinkedIn', 'wp-contact-plugin' ); ?></span>
                     </a>
                 <?php endif; ?>
             </div>
