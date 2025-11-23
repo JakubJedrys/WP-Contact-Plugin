@@ -242,6 +242,7 @@
     inline-size: 100%;
     block-size: 100%;
     fill: currentColor;
+    stroke: currentColor;
 }
 
 .screen-reader-text {

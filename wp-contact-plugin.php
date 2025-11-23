@@ -381,28 +381,47 @@ class WP_Contact_Plugin {
         }
 
         $allowed_svg_tags = [
-            'svg'          => [ 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'aria-hidden' => true, 'role' => true, 'focusable' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true ],
-            'g'            => [ 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'transform' => true, 'opacity' => true, 'class' => true ],
-            'path'         => [ 'd' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'opacity' => true, 'class' => true ],
-            'circle'       => [ 'cx' => true, 'cy' => true, 'r' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
-            'ellipse'      => [ 'cx' => true, 'cy' => true, 'rx' => true, 'ry' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
-            'rect'         => [ 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true, 'ry' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
-            'line'         => [ 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
-            'polyline'     => [ 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
-            'polygon'      => [ 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
-            'title'        => [],
-            'desc'         => [],
-            'defs'         => [],
-            'clipPath'     => [ 'id' => true ],
-            'mask'         => [ 'id' => true ],
-            'use'          => [ 'href' => true, 'xlink:href' => true ],
+            'svg'            => [
+                'xmlns'               => true,
+                'xmlns:xlink'         => true,
+                'viewBox'             => true,
+                'viewbox'             => true,
+                'width'               => true,
+                'height'              => true,
+                'preserveAspectRatio' => true,
+                'aria-hidden'         => true,
+                'aria-label'          => true,
+                'role'                => true,
+                'focusable'           => true,
+                'fill'                => true,
+                'stroke'              => true,
+                'stroke-width'        => true,
+                'stroke-linecap'      => true,
+                'stroke-linejoin'     => true,
+                'class'               => true,
+            ],
+            'g'              => [ 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'transform' => true, 'opacity' => true, 'class' => true ],
+            'path'           => [ 'd' => true, 'fill' => true, 'fill-rule' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'stroke-miterlimit' => true, 'opacity' => true, 'class' => true ],
+            'circle'         => [ 'cx' => true, 'cy' => true, 'r' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'ellipse'        => [ 'cx' => true, 'cy' => true, 'rx' => true, 'ry' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'rect'           => [ 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true, 'ry' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'line'           => [ 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'polyline'       => [ 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'polygon'        => [ 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'opacity' => true, 'class' => true ],
+            'title'          => [],
+            'desc'           => [],
+            'defs'           => [],
+            'clipPath'       => [ 'id' => true ],
+            'mask'           => [ 'id' => true ],
+            'symbol'         => [ 'id' => true, 'viewBox' => true, 'viewbox' => true ],
+            'use'            => [ 'href' => true, 'xlink:href' => true ],
             'linearGradient' => [ 'id' => true, 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true, 'gradientUnits' => true ],
-            'stop'         => [ 'offset' => true, 'stop-color' => true, 'stop-opacity' => true ],
+            'stop'           => [ 'offset' => true, 'stop-color' => true, 'stop-opacity' => true ],
         ];
 
         $sanitized_svg = wp_kses( $svg_markup, $allowed_svg_tags );
 
-        if ( '' === trim( $sanitized_svg ) ) {
+        if ( '' === trim( $sanitized_svg ) || ! preg_match( '/<svg\b[^>]*>/i', $sanitized_svg ) ) {
             return '';
         }
 
